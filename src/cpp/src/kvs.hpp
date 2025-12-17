@@ -29,8 +29,8 @@
 #include "score/mw/log/logger.h"
 
 #define KVS_MAX_SNAPSHOTS 3
-#define KVS_MAX_STORAGE_BYTES (100) /* Max total storage size for all snapshots including hash files in bytes */
-
+#define KVS_MAX_STORAGE_BYTES (10000) /* Max total storage size for all snapshots including hash files in bytes */
+static constexpr size_t HASH_FILE_SIZE = 4;
 
 namespace score::mw::per::kvs {
 
@@ -369,6 +369,7 @@ class Kvs final {
         std::unique_ptr<score::mw::log::Logger> logger;
 
         /* Private Methods */
+        score::ResultBlank check_size_on_write(const std::unordered_map<std::string, KvsValue>& potential_kvs);
         score::Result<size_t> get_file_size(const score::filesystem::Path& file_path);
         score::Result<size_t> get_current_storage_size();
         score::ResultBlank snapshot_rotate();

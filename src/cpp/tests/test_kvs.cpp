@@ -1257,4 +1257,99 @@ TEST(kvs, flush_fails_when_storage_limit_exceeded) {
     // Cleanup the test directory
     std::filesystem::remove_all(test_dir);
 }
+
+TEST(kvs_set_value, set_value_fails_when_storage_limit_exceeded) {
+    const std::string test_dir = "./set_value_storage_test/";
+    std::filesystem::remove_all(test_dir);
+
+    // Note: KVS_MAX_STORAGE_BYTES is a compile-time constant, assumed to be 200 for this test.
+    // We need to leave room for JSON formatting overhead (keys, type info, braces, etc.).
+    // A 50-byte buffer should be safe.
+    const size_t overhead_estimate = 50;
+    ASSERT_GT(KVS_MAX_STORAGE_BYTES, overhead_estimate); // Ensure the constant is large enough
+    const size_t max_payload_size = KVS_MAX_STORAGE_BYTES - overhead_estimate;
+
+    // --- SCENARIO 1: Fail on new key when limit is exceeded ---
+    {
+        KvsBuilder builder(InstanceId(1));
+        builder.dir(std::string(test_dir));
+        auto open_res = builder.build();
+        ASSERT_TRUE(open_res);
+        Kvs kvs = std::move(open_res.value());
+
+        // Add data that almost fills the storage
+        std::string large_data(max_payload_size, 'a');
+        auto res1 = kvs.set_value("key1", KvsValue(large_data.c_str()));
+        ASSERT_TRUE(res1) << "Initial set_value should succeed";
+
+        // Try to add more data, which should fail
+        auto res2 = kvs.set_value("key2", KvsValue("this should not fit"));
+        ASSERT_FALSE(res2) << "Second set_value should fail";
+        EXPECT_EQ(static_cast<ErrorCode>(*res2.error()), ErrorCode::OutOfStorageSpace);
+
+        // Verify the second key was not actually added
+        auto get_res = kvs.get_value("key2");
+        EXPECT_FALSE(get_res);
+        EXPECT_EQ(get_res.error(), ErrorCode::KeyNotFound);
+    }
+
+    // --- SCENARIO 2: Fail on updating a key if new value is too large ---
+    {
+        KvsBuilder builder(InstanceId(2));
+        std::string test_dir_mut = test_dir;
+        builder.dir(std::move(test_dir_mut));
+        auto open_res = builder.build();
+        ASSERT_TRUE(open_res);
+        Kvs kvs = std::move(open_res.value());
+
+        const std::string small_value = "small";
+        auto res1 = kvs.set_value("key_to_update", KvsValue(small_value.c_str()));
+        ASSERT_TRUE(res1) << "Setting initial small value should succeed";
+
+        // Try to update with a value that is too large
+        std::string oversized_data(KVS_MAX_STORAGE_BYTES, 'b');
+        auto res2 = kvs.set_value("key_to_update", KvsValue(oversized_data.c_str()));
+        ASSERT_FALSE(res2) << "Updating with oversized value should fail";
+        EXPECT_EQ(static_cast<ErrorCode>(*res2.error()), ErrorCode::OutOfStorageSpace);
+
+        // Verify the original value is still intact
+        auto get_res = kvs.get_value("key_to_update");
+        ASSERT_TRUE(get_res);
+        EXPECT_EQ(std::get<std::string>(get_res.value().getValue()), small_value);
+    }
+
+    // --- SCENARIO 3: Succeed after freeing up space ---
+    {
+        KvsBuilder builder(InstanceId(3));
+        builder.dir(std::string(test_dir));
+        auto open_res = builder.build();
+        ASSERT_TRUE(open_res);
+        Kvs kvs = std::move(open_res.value());
+
+        // 1. Fill the storage
+        std::string large_data(max_payload_size, 'c');
+        auto res1 = kvs.set_value("key_to_remove", KvsValue(large_data.c_str()));
+        ASSERT_TRUE(res1);
+
+        // 2. Confirm adding a new key fails
+        auto res2 = kvs.set_value("new_key", KvsValue("some data"));
+        ASSERT_FALSE(res2);
+        EXPECT_EQ(static_cast<ErrorCode>(*res2.error()), ErrorCode::OutOfStorageSpace);
+
+        // 3. Remove the large key
+        auto remove_res = kvs.remove_key("key_to_remove");
+        ASSERT_TRUE(remove_res);
+
+        // 4. Try adding the new key again
+        auto res3 = kvs.set_value("new_key", KvsValue("some data"));
+        ASSERT_TRUE(res3) << "set_value should succeed after freeing space";
+
+        // Verify the key now exists
+        auto get_res = kvs.get_value("new_key");
+        ASSERT_TRUE(get_res);
+        EXPECT_EQ(std::get<std::string>(get_res.value().getValue()), "some data");
+    }
+
+    std::filesystem::remove_all(test_dir);
+}
     
