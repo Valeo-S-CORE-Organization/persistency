@@ -1257,4 +1257,50 @@ TEST(kvs, flush_fails_when_storage_limit_exceeded) {
     // Cleanup the test directory
     std::filesystem::remove_all(test_dir);
 }
-    
+
+
+TEST(kvs_check_size, check_size_scenarios) {
+    const std::string test_dir = "./kvs_check_size_test/";
+    std::filesystem::remove_all(test_dir);
+
+    // --- SCENARIO 1: Success on data within limits ---
+    {
+        KvsBuilder builder(InstanceId(1));
+        builder.dir(std::string(test_dir));
+        auto open_res = builder.build();
+        ASSERT_TRUE(open_res);
+        Kvs kvs = std::move(open_res.value());
+
+        // Add a small amount of data
+        auto set_res = kvs.set_value("key", KvsValue("some_data"));
+        ASSERT_TRUE(set_res);
+
+        // Check the size
+        auto check_res = kvs.check_size();
+        ASSERT_TRUE(check_res) << "check_size should succeed for data within limits";
+        // Check if the returned size is plausible
+        EXPECT_GT(check_res.value(), 0);
+        EXPECT_LT(check_res.value(), KVS_MAX_STORAGE_BYTES);
+    }
+
+    // --- SCENARIO 2: Failure on data exceeding limits ---
+    {
+        KvsBuilder builder(InstanceId(2));
+        builder.dir(std::string(test_dir));
+        auto open_res = builder.build();
+        ASSERT_TRUE(open_res);
+        Kvs kvs = std::move(open_res.value());
+
+        // Add data that will certainly exceed the storage limit
+        std::string large_data(KVS_MAX_STORAGE_BYTES, 'x');
+        auto set_res = kvs.set_value("oversized_key", KvsValue(large_data.c_str()));
+        ASSERT_TRUE(set_res);
+
+        // Check the size, expecting a failure
+        auto check_res = kvs.check_size();
+        ASSERT_FALSE(check_res) << "check_size should fail when storage limit is exceeded";
+        EXPECT_EQ(static_cast<ErrorCode>(*check_res.error()), ErrorCode::OutOfStorageSpace);
+    }
+
+    std::filesystem::remove_all(test_dir);
+}
