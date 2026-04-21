@@ -392,18 +392,16 @@ class Kvs final
 
         /* Logging */
         std::unique_ptr<score::mw::log::Logger> logger;
-
-        /* Private Methods */
-        score::Result<std::string> serialize_and_check();
-        score::Result<size_t> get_file_size(const score::filesystem::Path& file_path);
-        score::Result<size_t> get_current_storage_size();
-        score::ResultBlank snapshot_rotate();
-        score::Result<std::unordered_map<std::string, KvsValue>> parse_json_data(const std::string& data);
-        score::Result<std::unordered_map<std::string, KvsValue>> open_json(const score::filesystem::Path& prefix, OpenJsonNeedFile need_file);
-        score::ResultBlank write_json_data(const std::string& buf);
-
-    };
-
-}/* namespace score::mw::per::kvs */
+    /* Private Methods */
+    score::ResultBlank snapshot_rotate();
+    score::Result<std::unordered_map<std::string, KvsValue>> parse_json_data(const std::string& data);
+    score::Result<std::unordered_map<std::string, KvsValue>> open_json(const score::filesystem::Path& prefix,
+                                                                       OpenJsonNeedFile need_file);
+    score::ResultBlank write_json_data(const std::string& buf);
+    score::ResultBlank write_and_sync(const std::string& path, const void* data, std::size_t size);
+    score::Result<std::string> serialize_and_check();
+    score::Result<size_t> get_file_size(const score::filesystem::Path& file_path);
+    score::Result<size_t> get_current_storage_size();
+};/* namespace score::mw::per::kvs */
 
 #endif /* SCORE_LIB_KVS_KVS_HPP */
