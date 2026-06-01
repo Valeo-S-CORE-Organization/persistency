@@ -18,7 +18,7 @@ module(
 
 ## Toolchains (dependencies and config)
 # python
-bazel_dep(name = "rules_python", version = "1.4.1")
+bazel_dep(name = "rules_python", version = "1.8.3")
 
 PYTHON_VERSION = "3.12"
 
@@ -37,43 +37,42 @@ pip.parse(
 use_repo(pip, "pip_score_venv_test")
 
 # rust
-bazel_dep(name = "rules_rust", version = "0.67.0")
-git_override(
-    module_name = "rules_rust",
-    commit = "2b171a7376e69cb1207eced1f66904ce4ae0c819",
-    remote = "https://github.com/pawelrutkaq/rules_rust.git",  # To be fixed once rule_rust is in score bazel registry
-)
-
-# Shared Rust policies (Clippy config, etc.), overridden locally during development.
-bazel_dep(name = "score_rust_policies", version = "0.0.4", dev_dependency = True)
+bazel_dep(name = "rules_rust", version = "0.68.2-score")
 
 # bazel cc rules
-bazel_dep(name = "rules_cc", version = "0.1.2")
+bazel_dep(name = "rules_cc", version = "0.2.17")
 
 # Toolchains and extensions
 bazel_dep(name = "score_bazel_cpp_toolchains", version = "0.2.2", dev_dependency = True)
-bazel_dep(name = "score_toolchains_rust", version = "0.7.0", dev_dependency = True)
+bazel_dep(name = "score_toolchains_rust", version = "0.9.1", dev_dependency = True)
 
 ## Bazel registry
 # Module dependencies
-bazel_dep(name = "googletest", version = "1.17.0.bcr.1")
+bazel_dep(name = "googletest", version = "1.17.0.bcr.2")
 
-bazel_dep(name = "google_benchmark", version = "1.9.4", dev_dependency = True)
+bazel_dep(name = "google_benchmark", version = "1.9.5", dev_dependency = True)
 
 bazel_dep(name = "platforms", version = "1.0.0")
 
 ## S-CORE bazel registry
-bazel_dep(name = "score_baselibs", version = "0.2.4")
-bazel_dep(name = "score_baselibs_rust", version = "0.1.0")
-bazel_dep(name = "score_bazel_platforms", version = "0.0.4")
-bazel_dep(name = "score_docs_as_code", version = "3.0.0")
+bazel_dep(name = "score_baselibs", version = "0.2.7")
+bazel_dep(name = "score_baselibs_rust", version = "0.1.2")
+bazel_dep(name = "score_bazel_platforms", version = "0.1.2")
+bazel_dep(name = "score_docs_as_code", version = "4.0.3")
 
-bazel_dep(name = "score_platform", version = "0.5.3", dev_dependency = True)
-bazel_dep(name = "score_process", version = "1.4.3", dev_dependency = True)
+bazel_dep(name = "score_platform", version = "0.5.5", dev_dependency = True)
+bazel_dep(name = "score_process", version = "1.5.4", dev_dependency = True)
 
 bazel_dep(name = "score_python_basics", version = "0.3.4")
-bazel_dep(name = "score_tooling", version = "1.1.0")
-bazel_dep(name = "score_logging", version = "0.1.0")
+bazel_dep(name = "score_tooling", version = "1.2.0")
+bazel_dep(name = "score_logging", version = "0.2.0")
+
+# grpc-java 1.69.0 is the first BCR release in this dependency line that
+# explicitly supports Bazel 8 and avoids the broken legacy grpc extension import.
+single_version_override(
+    module_name = "grpc-java",
+    version = "1.69.0",
+)
 
 # TODO: remove once inherited properly from `score_logging`.
 bazel_dep(name = "trlc", version = "0.0.0", dev_dependency = True)
@@ -83,19 +82,13 @@ git_override(
     remote = "https://github.com/bmw-software-engineering/trlc.git",
 )
 
-# ToDo: implicit dependencies for score_tooling, but needed directly here??
-bazel_dep(name = "aspect_rules_lint", version = "2.0.0")
 bazel_dep(name = "buildifier_prebuilt", version = "8.2.0.2")
+bazel_dep(name = "aspect_rules_lint", version = "2.0.0")
 
 ## temporary overrides / tools
 # Testing utils dependency.
 # Direct usage of tag in git_override reports false problem in editor, using hash of a tag
-bazel_dep(name = "score_test_scenarios", version = "0.3.0")
-git_override(
-    module_name = "score_test_scenarios",
-    commit = "a2f9cded3deb636f5dc800bf7a47131487119721",  # tag v0.3.0
-    remote = "https://github.com/eclipse-score/testing_tools.git",
-)
+bazel_dep(name = "score_test_scenarios", version = "0.4.1")
 
 bazel_dep(name = "custom_qemu", version = "1.0.0", dev_dependency = True)
 archive_override(
@@ -159,4 +152,4 @@ use_repo(
 )
 
 # S-CORE crates
-bazel_dep(name = "score_crates", version = "0.0.7")
+bazel_dep(name = "score_crates", version = "0.0.9")

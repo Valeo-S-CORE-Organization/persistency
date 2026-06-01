@@ -22,7 +22,7 @@ docs(
         "@score_platform//:needs_json",
         "@score_process//:needs_json",
     ],
-    source_dir = "docs",
+    source_dir = ".",
 )
 
 setup_starpls(
@@ -139,6 +139,22 @@ test_suite(
     tests = [
         "//tests/test_cases:cit_cpp",
         "//tests/test_cases:cit_rust",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+test_suite(
+    name = "miri_tests",
+    tags = ["manual"],
+    tests = [
+        "//src/rust/rust_kvs:tests_miri_error_code",
+        "//src/rust/rust_kvs:tests_miri_json_backend",
+        "//src/rust/rust_kvs:tests_miri_kvs",
+        "//src/rust/rust_kvs:tests_miri_kvs_api",
+        "//src/rust/rust_kvs:tests_miri_kvs_builder",
+        "//src/rust/rust_kvs:tests_miri_kvs_mock",
+        "//src/rust/rust_kvs:tests_miri_kvs_serialize",
+        "//src/rust/rust_kvs:tests_miri_kvs_value",
     ],
     visibility = ["//visibility:public"],
 )
