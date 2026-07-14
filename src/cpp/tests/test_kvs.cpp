@@ -151,10 +151,10 @@ TEST(kvs_TEST, parse_json_data_failure)
     cleanup_environment();
 }
 
-TEST(kvs_TEST, parse_json_data_skips_over_length_key)
+TEST(kvs_TEST, parse_json_data_rejects_over_length_key)
 {
-    /* FEAT_REQ__KVS__maximum_size: keys longer than the limit found while loading from
-       storage must be skipped, not loaded into the store. */
+    /* comp_req__kvs__key_length: an over-length key found while loading means the file
+       is invalid/corrupted; loading must halt with an error, not silently drop data. */
     prepare_environment();
 
     auto kvs =
@@ -184,10 +184,8 @@ TEST(kvs_TEST, parse_json_data_skips_over_length_key)
     kvs->parser = std::move(mock_parser);
 
     auto result = kvs->parse_json_data("data_not_used_in_mocking");
-    ASSERT_TRUE(result);
-    /* The valid key is loaded; the over-length key is skipped. */
-    EXPECT_EQ(result.value().count(valid_key), 1U);
-    EXPECT_EQ(result.value().count(too_long_key), 0U);
+    ASSERT_FALSE(result);
+    EXPECT_EQ(static_cast<ErrorCode>(*result.error()), ErrorCode::KeyTooLong);
 
     cleanup_environment();
 }
