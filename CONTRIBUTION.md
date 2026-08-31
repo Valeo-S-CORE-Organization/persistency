@@ -20,16 +20,16 @@ This phase is part of the eclipse Incubation Phase and shall establish all the p
 #### Bug Fixes and Improvements
 Improvements are adding/changing processes and infrastructure, bug fixes can be also on development work products like code.
 In case you want to fix a bug or contribute an improvement, please perform the following steps:
-1) Create a PR by using the corresponding template ([Bugfix PR template](.github/PULL_REQUEST_TEMPLATE/bug_fix.md) or [Improvement PR template](.github/PULL_REQUEST_TEMPLATE/improvement.md)). Please mark your PR as draft until it's ready for review by the Committers (see the [Eclipse Foundation Project Handbook](https://www.eclipse.org/projects/handbook/#contributing-committers) for more information on the role definitions). Improvements are requested by the definition or modification of [Stakeholder Requirements](docs/stakeholder_requirements) or [Tool Requirements](docs/tool_requirements) and may be implemented after acceptance/merge of the request by a second Improvement PR. The needed reviews are automatically triggered via the [CODEOWNERS](.github/CODEOWNERS) file in the repository.
-2) Initiate content review by opening a corresponding issue for the PR when it is ready for review. Review of the PR and final merge into the project repository is in responsibility of the Committers. Use the [Bugfix Issue template](.github/ISSUE_TEMPLATE/bug_fix.md) or [Improvement Issue template](.github/ISSUE_TEMPLATE/improvement.md) for this.
+1) Create a PR describing the bug fix or improvement. Please mark your PR as draft until it's ready for review by the Committers (see the [Eclipse Foundation Project Handbook](https://www.eclipse.org/projects/handbook/#contributing-committers) for more information on the role definitions). Improvements are requested by the definition or modification of [Stakeholder Requirements](https://github.com/eclipse-score/score/tree/main/docs/requirements/stakeholder) or [Tool Requirements](https://github.com/eclipse-score/score/tree/main/docs/score_tools/tools_requirements) and may be implemented after acceptance/merge of the request by a second Improvement PR. The needed reviews are automatically triggered via the [CODEOWNERS](.github/CODEOWNERS) file in the repository.
+2) Initiate content review by opening a corresponding issue for the PR when it is ready for review. Review of the PR and final merge into the project repository is in responsibility of the Committers. Pick the matching template (for example *Bug* or *Task*) from the ones offered when opening a new issue.
 
-Please check here for our Git Commit Rules in the [Configuration_Tool_Guidelines](https://eclipse-score.github.io/score/process_description/guidelines/index.html).
+Please check here for our Git Commit Rules in the [process description](https://eclipse-score.github.io/process_description/main/).
 
-Please use the [Stakeholder and Tool Requirements Template](https://eclipse-score.github.io/score/process_description/templates/index.html) when defining these requirements.
+Please use the [folder and work product templates](https://eclipse-score.github.io/process_description/main/folder_templates/index.html) when defining these requirements.
 
-![Contribution guide workflow](./docs/_assets/contribution_guide.svg "Contribution guide workflow")
+![Contribution guide workflow](https://raw.githubusercontent.com/eclipse-score/score/main/docs/_assets/contribution_guide.svg "Contribution guide workflow")
 
 #### Additional Information
 Please note, that all Git commit messages must adhere the rules described in the [Eclipse Foundation Project Handbook](https://www.eclipse.org/projects/handbook/#resources-commit).
 
-Please find process descriptions here: [process description](https://eclipse-score.github.io/score/process_description/).
+Please find process descriptions here: [process description](https://eclipse-score.github.io/process_description/main/).
