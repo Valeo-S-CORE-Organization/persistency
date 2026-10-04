@@ -611,6 +611,29 @@ TEST(kvs_set_value, set_value_key_too_long)
     cleanup_environment();
 }
 
+TEST(kvs_get_value, get_value_failure_key_too_long)
+{
+    prepare_environment();
+    auto result = Kvs::open(instance_id, OpenNeedDefaults::Required, OpenNeedKvs::Required, std::string(data_dir));
+    ASSERT_TRUE(result);
+
+    /* comp_req__kvs__key_length: a key of exactly KVS_MAX_KEY_LENGTH_BYTES stays a
+       normal lookup, so an over-length key is the only case that changes */
+    std::string boundary_key(KVS_MAX_KEY_LENGTH_BYTES, 'k');
+    auto boundary_result = result.value().get_value(boundary_key);
+    EXPECT_FALSE(boundary_result);
+    EXPECT_EQ(static_cast<ErrorCode>(*boundary_result.error()), ErrorCode::KeyNotFound);
+
+    /* An over-length key can never have been stored, so reporting KeyNotFound would
+       describe it as ordinary missing data instead of an invalid request */
+    std::string too_long_key(KVS_MAX_KEY_LENGTH_BYTES + 1U, 'k');
+    auto get_value_result = result.value().get_value(too_long_key);
+    EXPECT_FALSE(get_value_result);
+    EXPECT_EQ(static_cast<ErrorCode>(*get_value_result.error()), ErrorCode::KeyTooLong);
+
+    cleanup_environment();
+}
+
 TEST(kvs_set_value, set_value_failure)
 {
     prepare_environment();

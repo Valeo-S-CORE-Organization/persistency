@@ -127,7 +127,7 @@ score::Result<std::unordered_map<std::string, KvsValue>> Kvs::parse_json_data(co
                 if (!is_key_length_valid(key))
                 {
                     logger->LogError() << "Key length" << key.length() << "exceeds maximum allowed"
-                                       << KVS_MAX_KEY_LENGTH_BYTES << "bytes while loading";
+                                       << KVS_MAX_KEY_LENGTH_BYTES << "bytes while loading, key:" << key;
                     result = score::MakeUnexpected(ErrorCode::KeyTooLong);
                     error = true;
                     break;
@@ -356,6 +356,15 @@ score::Result<bool> Kvs::key_exists(const std::string_view key)
 /* Retrieve the value associated with a key*/
 score::Result<KvsValue> Kvs::get_value(const std::string_view key)
 {
+    /* comp_req__kvs__key_length: an over-length key cannot have been stored, so
+       reporting KeyNotFound would describe a caller error as ordinary missing data. */
+    if (!is_key_length_valid(key))
+    {
+        logger->LogError() << "Key length" << key.length() << "exceeds maximum allowed" << KVS_MAX_KEY_LENGTH_BYTES
+                           << "bytes, key:" << key;
+        return score::MakeUnexpected(ErrorCode::KeyTooLong);
+    }
+
     score::Result<KvsValue> result = score::MakeUnexpected(ErrorCode::UnmappedError);
     std::unique_lock<std::mutex> lock_kvs(kvs_mutex, std::try_to_lock);
     if (lock_kvs.owns_lock())
@@ -460,8 +469,8 @@ score::ResultBlank Kvs::set_value(const std::string_view key, const KvsValue& va
     /* comp_req__kvs__key_length: reject keys that exceed the maximum length. */
     if (!is_key_length_valid(key))
     {
-        logger->LogError() << "Key length" << key.length() << "exceeds maximum allowed"
-                           << KVS_MAX_KEY_LENGTH_BYTES << "bytes";
+        logger->LogError() << "Key length" << key.length() << "exceeds maximum allowed" << KVS_MAX_KEY_LENGTH_BYTES
+                           << "bytes, key:" << key;
         return score::MakeUnexpected(ErrorCode::KeyTooLong);
     }
 
